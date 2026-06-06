@@ -1,0 +1,4 @@
+interface:
+  display_name: "Academic Mapping"
+  short_description: "Build Neo4j academic talent maps from papers and patents."
+  default_prompt: "Map a paper or patent set into a Neo4j talent graph and candidate list."
