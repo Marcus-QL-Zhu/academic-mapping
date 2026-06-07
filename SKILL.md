@@ -42,7 +42,13 @@ Person<TAB>Work title<TAB>Organization<TAB>Source URL<TAB>paper|patent
      - `company_clusters.csv`
      - `summary.json`
 
-6. **Enrich public professional contacts when requested**
+6. **Ask about outreach after first-stage mapping**
+   - After the candidate graph, ranking, and first contact enrichment outputs are complete, proactively ask whether the user wants tailored outreach email drafts.
+   - Default outreach language is English unless the user specifies another language.
+   - If the user wants outreach, collect or infer the client context, role mission, value proposition, confidentiality level, recruiter identity, and preferred tone before drafting.
+   - Write email drafts into the contact enrichment CSV as an `email draft` column for A/B-grade contacts only, unless the user explicitly asks for another grade policy.
+
+7. **Enrich public professional contacts when requested**
    - Read `references/contact-enrichment.md` before collecting contact information.
    - Collect only A/B/D-grade public professional contacts:
      - A: person-specific contact on official/institutional/publisher/paper/patent source.
@@ -50,12 +56,21 @@ Person<TAB>Work title<TAB>Organization<TAB>Source URL<TAB>paper|patent
      - D: generic lab, department, institution, or company contact when no person-specific contact exists.
    - Do not provide private mobile-number search methods, data-broker workflows, account enumeration, credentialed lookup, deep web, or dark web collection.
 
-7. **Import Neo4j**
+8. **Draft tailored outreach emails when requested**
+   - Read `references/outreach-email-drafts.md` before drafting.
+   - Use candidate-specific evidence from `talent_rankings.csv`, including works, topics, organization, rank, and score.
+   - Make each email feel like a targeted invitation, not a generic campaign.
+   - Do not invent titles, compensation numbers, client names, private details, or contact data.
+   - Keep the client anonymous unless the user explicitly provides and approves the name.
+   - Preserve a deterministic template fallback even when using an external LLM.
+   - If using an API provider, load keys from environment variables or a user-supplied local `.env`; never copy secrets into the project or commit them.
+
+9. **Import Neo4j**
    - Use Docker Neo4j when local Neo4j is unavailable.
    - Avoid port conflicts; if `7474/7687` are occupied, use `17474/17687` or the next clear pair.
    - Rebuild idempotently: clear graph, load nodes, load direct relationships, then derived bridge relationships.
 
-8. **Verify**
+10. **Verify**
    - Run tests if the generated project has them.
    - Verify Neo4j counts for `Person`, `Work`, `Organization`, `Topic`, `COLLABORATED_WITH`, `WORKS_ON_TOPIC`, `ACTIVE_IN`, and `SHARES_TOPIC_WITH`.
    - Run at least one Browser-friendly path query before telling the user the graph is usable.
@@ -133,6 +148,19 @@ python .\scripts\graph_builder.py
 .\scripts\import_neo4j.ps1
 ```
 
+Use `scripts/generate_email_drafts.py` inside a generated mapping project after contact enrichment exists:
+
+```powershell
+python "$env:CODEX_HOME\skills\academic-mapping\scripts\generate_email_drafts.py" `
+  --project ".\academic-sourcing\my-topic-map" `
+  --contact-csv ".\outputs\contact_enrichment_topN.csv" `
+  --rankings ".\outputs\talent_rankings.csv" `
+  --provider template `
+  --write
+```
+
+For an OpenAI-compatible provider such as MiniMax, set `MINIMAX_API_KEY` or provide a local `.env` path via `--env`. Generated outputs add `email draft` for A/B contacts and leave D/X contacts blank by default.
+
 ## Browser Queries
 
 Give the user graph-view queries, not only table queries:
@@ -164,3 +192,4 @@ LIMIT 200;
 - Make imports idempotent.
 - Distinguish coauthor evidence from topic similarity in the final explanation.
 - Distinguish public professional contact details from private personal contact details.
+- Draft outreach only from supplied or verified evidence; do not add unverified honorifics such as Dr. or Prof.

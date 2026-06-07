@@ -8,7 +8,8 @@ It can generate:
 - coauthor or coinventor relationships;
 - topic bridge relationships across otherwise separate teams;
 - ranked candidate lists for expert mapping or recruiting research;
-- A/B/D-grade public professional contact enrichment guidance.
+- A/B/D-grade public professional contact enrichment guidance;
+- tailored English outreach email drafts for A/B-grade contacts.
 
 ## Install
 
@@ -68,6 +69,32 @@ The skill supports public professional contact enrichment only:
 - D: generic lab, department, institution, or company contact.
 
 It is not intended for private mobile-number lookup, data-broker use, account enumeration, leaked data, deep web, or dark web collection.
+
+## Outreach Email Drafts
+
+After first-stage mapping and contact enrichment, the skill should ask whether
+you want tailored outreach emails. Drafts default to English and are written
+only for A/B-grade contacts unless you choose another policy.
+
+Template generation:
+
+```powershell
+python .\scripts\generate_email_drafts.py `
+  --project .\academic-sourcing\example-map `
+  --contact-csv .\outputs\contact_enrichment_topN.csv `
+  --rankings .\outputs\talent_rankings.csv `
+  --provider template `
+  --client-description "a confidential leading semiconductor company" `
+  --role "IGZO memory technology expert" `
+  --mission "IGZO-based memory device architecture and process integration" `
+  --technical-scope "IGZO memory, 3D DRAM, vertical channel transistors" `
+  --value-proposition "The client can discuss an above-market package for a truly aligned expert." `
+  --write
+```
+
+OpenAI-compatible LLM generation, such as MiniMax, is also supported with
+`--provider llm --env path\to\.env`. Keep real API keys in local environment
+files and do not commit them.
 
 ## License
 
